@@ -1,11 +1,34 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import { Inter } from '@next/font/google'
-import styles from '@/styles/Home.module.css'
-
-const inter = Inter({ subsets: ['latin'] })
+/* eslint-disable react-hooks/exhaustive-deps */
+import React from "react";
+import Head from "next/head";
+import Image from "next/image";
+import styles from "@/styles/Home.module.css";
+import weatherService from "@/services/weatherService";
+import bg from "../../public/chuva.gif";
 
 export default function Home() {
+  const [data, setData] = React.useState<any>({});
+  const [location, setLocation] = React.useState("");
+
+  const getWeather = async () => {
+    try {
+      const result = await weatherService.getWeather({
+        location,
+      });
+
+      if (!result) {
+        console.log(result);
+        return;
+      }
+
+      setData(result);
+      console.log("result", result);
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  };
+
   return (
     <>
       <Head>
@@ -14,110 +37,56 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <main className={styles.main}>
-        <div className={styles.description}>
-          <p>
-            Get started by editing&nbsp;
-            <code className={styles.code}>src/pages/index.tsx</code>
-          </p>
-          <div>
-            <a
-              href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              By{' '}
-              <Image
-                src="/vercel.svg"
-                alt="Vercel Logo"
-                className={styles.vercelLogo}
-                width={100}
-                height={24}
-                priority
-              />
-            </a>
-          </div>
-        </div>
-
-        <div className={styles.center}>
-          <Image
-            className={styles.logo}
-            src="/next.svg"
-            alt="Next.js Logo"
-            width={180}
-            height={37}
-            priority
+      <div className={styles.app} style={{ backgroundImage: `url(${bg.src})` }}>
+        <div className={styles.search}>
+          <input
+            className={styles.input}
+            value={location}
+            onChange={(event) => setLocation(event.target.value)}
+            placeholder="Enter Location"
+            type="text"
           />
-          <div className={styles.thirteen}>
-            <Image
-              src="/thirteen.svg"
-              alt="13"
-              width={40}
-              height={31}
-              priority
-            />
+          <button onClick={getWeather}>Pesquisar</button>
+        </div>
+        <div className={styles.container}>
+          <div className={styles.top}>
+            <div className={styles.location}>
+              <p>{data.name}</p>
+            </div>
+            <div className={styles.temp}>
+              {data.main ? <h1>{data.main.temp.toFixed()}°C</h1> : null}
+            </div>
+            <div className={styles.description}>
+              {data.weather ? <p>{data.weather[0].main}</p> : null}
+            </div>
           </div>
+
+          {data.name !== undefined && (
+            <div className={styles.bottom}>
+              <div className={styles.feels}>
+                {data.main ? (
+                  <p className={styles.bold}>
+                    {data.main.feels_like.toFixed()}°F
+                  </p>
+                ) : null}
+                <p>Feels Like</p>
+              </div>
+              <div className={styles.humidity}>
+                {data.main ? (
+                  <p className={styles.bold}>{data.main.humidity}%</p>
+                ) : null}
+                <p>Humidity</p>
+              </div>
+              <div className={styles.wind}>
+                {data.wind ? (
+                  <p className={styles.bold}>{data.wind.speed.toFixed()} MPH</p>
+                ) : null}
+                <p>Wind Speed</p>
+              </div>
+            </div>
+          )}
         </div>
-
-        <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Learn <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Learn about Next.js in an interactive course with&nbsp;quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Templates <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Discover and deploy boilerplate example Next.js&nbsp;projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2 className={inter.className}>
-              Deploy <span>-&gt;</span>
-            </h2>
-            <p className={inter.className}>
-              Instantly deploy your Next.js site to a shareable URL
-              with&nbsp;Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
+      </div>
     </>
-  )
+  );
 }
