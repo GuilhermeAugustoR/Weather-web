@@ -1,3 +1,4 @@
+import axios from "axios";
 import api from "./api";
 
 interface IProps {
@@ -11,7 +12,10 @@ class WeatherService {
       );
       return response.data;
     } catch (error: any) {
-      console.log("errorMyKeys", error.response.data);
+      if (axios.isAxiosError(error)) {
+        const errorRes = error.response?.data.message;
+        return errorRes as string;
+      }
       return false;
     }
   }
